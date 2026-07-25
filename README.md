@@ -1,8 +1,6 @@
 # Social Media Addiction Analyzer
 
-### BITM — Department of AI & ML | Project Batch 06 | Academic Year 2025-2026
-
-An end-to-end ML-powered web application that predicts addiction scores and productivity levels from social media usage patterns.
+> An end-to-end ML-powered web application that predicts addiction scores and productivity levels from social media usage patterns.
 
 ---
 
