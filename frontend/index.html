@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Social Media Addiction Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg:        #07070d;
+      --surface:   #0f0f1a;
+      --surface2:  #16162a;
+      --surface3:  #1e1e30;
+      --border:    rgba(255,255,255,0.06);
+      --accent:    #7c6af7;
+      --accent2:   #22d3ee;
+      --success:   #22c55e;
+      --warning:   #f97316;
+      --danger:    #ef4444;
+      --text:      #e8e8f5;
+      --muted:     #5a5a78;
+      --fhead:     'Syne', sans-serif;
+      --fbody:     'DM Sans', sans-serif;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--fbody);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* animated grid bg */
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(124,106,247,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,247,.025) 1px, transparent 1px);
+      background-size: 56px 56px;
+      animation: gridDrift 40s linear infinite;
+      pointer-events:none; z-index:0;
+    }
+    @keyframes gridDrift { to { background-position: 56px 56px; } }
+
+    /* glow orbs */
+    .orb {
+      position:fixed; border-radius:50%;
+      filter: blur(120px); pointer-events:none; z-index:0; opacity:.35;
+    }
+    .orb1 { width:600px;height:600px; background:#0022ff; top:-10px; left:-150px; animation: float1 18s ease-in-out infinite; }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,-30px)} }
+    @keyframes float3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.3)} }
+
+    /* ─── HEADER ─── */
+    header {
+      position:relative; z-index:10;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:20px 52px;
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(20px);
+      background:rgba(7, 7, 13, 0);
+    }
+    .logo { display:flex; align-items:center; gap:12px; }
+    .logo-mark {
+      width:42px;height:42px; border-radius:12px;
+      display:grid; place-items:center; font-size:20px;
+    }
+    .logo-text h1 {
+      font-family:var(--fhead); font-size:17px; font-weight:800;
+      letter-spacing:-.3px;
+    }
+    .logo-text span {
+      display:block; font-size:10px; color:var(--muted);
+      letter-spacing:1.5px; text-transform:uppercase; margin-top:1px;
+    }
+    .powerbi-nav {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 22px; border-radius:10px;
+      border:none; color:#000; font-family:var(--fhead);
+      font-size:13px; font-weight:700; cursor:pointer;
+      transition:all .2s; letter-spacing:.3px;
+    }
+    .powerbi-nav:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(255, 255, 255, 0.4); }
+
+    /* ─── HERO ─── */
+    .hero {
+      position:relative; z-index:1;
+      text-align:center; padding:64px 48px 40px;
+    }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 18px; border-radius:100px;
+      background:rgba(124,106,247,.1);
+      border:1px solid rgba(124,106,247,.25);
+      font-size:12px; color:var(--accent);
+      letter-spacing:.8px; text-transform:uppercase;
+      margin-bottom:24px;
+      animation: fadeUp .6s ease both;
+    }
+    .badge-dot {
+      width:6px;height:6px;border-radius:50%;
+      background:var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+
+    .hero h2 {
+      font-family:var(--fhead);
+      font-size:clamp(30px,4.5vw,52px);
+      font-weight:800; letter-spacing:-1.5px; line-height:1.1;
+      margin-bottom:16px;
+      animation: fadeUp .6s .1s ease both;
+    }
+    .hero h2 span {
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .hero p {
+      max-width:520px; margin:0 auto;
+      color:var(--muted); font-size:15px; line-height:1.7;
+      animation: fadeUp .6s .2s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ─── LAYOUT ─── */
+    .wrap {
+      position:relative; z-index:1;
+      display:grid; grid-template-columns:400px 1fr;
+      gap:24px; padding:0 52px 60px;
+      max-width:1400px; margin:0 auto;
+    }
+
+    /* ─── GLASSMORPHISM ─── */
+    .glass {
+      background:rgba(15,15,26,.45);
+      border:1px solid rgba(255, 255, 255, 0.32);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+
+    /* ─── FORM PANEL ─── */
+    .form-panel {
+      background:rgba(15,15,26,.45);
+      border:1px solid rgba(255, 255, 255, 0.26);
+      border-radius:24px; padding:32px;
+      position:sticky; top:24px; height:fit-content;
+      animation: fadeUp .6s .3s ease both;
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .panel-head { font-family:var(--fhead); font-size:17px; font-weight:700; margin-bottom:4px; }
+    .panel-sub  { font-size:12px; color:var(--muted); margin-bottom:28px; }
+
+    .form-section-label {
+      font-size:10px; letter-spacing:2px; text-transform:uppercase;
+      color:var(--accent); font-weight:600; margin:20px 0 12px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .form-section-label::after {
+      content:''; flex:1; height:1px; background:rgba(124,106,247,.2);
+    }
+
+    .fg { margin-bottom:16px; }
+    label {
+      display:block; font-size:11px; font-weight:500;
+      letter-spacing:.8px; text-transform:uppercase;
+      color:var(--muted); margin-bottom:7px;
+    }
+    select {
+      width:100%; padding:11px 14px;
+      background:rgba(22,22,42,.4);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:10px; color:var(--text);
+      font-family:var(--fbody); font-size:14px;
+      outline:none; cursor:pointer; transition:border-color .2s, background .2s;
+      appearance:none;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a5a78' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 14px center;
+    }
+    select:focus {
+      border-color:var(--accent);
+      background-color:rgba(124,106,247,.1);
+    }
+    select option { background:var(--surface2); }
+
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+    .range-wrap { position:relative; }
+    input[type=range] {
+      width:100%; -webkit-appearance:none;
+      height:5px; background:var(--surface2); border-radius:5px; outline:none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance:none; width:20px;height:20px;
+      background:var(--accent); border-radius:50%; cursor:pointer;
+      box-shadow:0 0 0 5px rgba(124,106,247,.15);
+      transition: box-shadow .2s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      box-shadow:0 0 0 8px rgba(124,106,247,.2);
+    }
+    .range-meta {
+      display:flex; justify-content:space-between;
+      align-items:center; margin-top:6px;
+    }
+    .range-val {
+      font-family:var(--fhead); font-size:15px; font-weight:700;
+      color:var(--accent);
+    }
+    .range-ends { font-size:11px; color:var(--muted); }
+
+    .analyze-btn {
+      width:100%; padding:16px; margin-top:12px;
+      background:linear-gradient(45deg,#00000000,#ffffff71);
+      border:1px solid rgba(255, 255, 255, 0.283); border-radius:14px; color:#fff;
+      font-family:var(--fhead); font-size:15px; font-weight:700;
+      cursor:pointer; transition:all .25s; position:relative; overflow:hidden;
+      letter-spacing:.3px;
+    }
+    .analyze-btn::after {
+      content:''; position:absolute;
+      top:0;left:-100%;width:100%;height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+      transition:left .5s;
+    }
+    .analyze-btn:hover::after { left:100%; }
+    .analyze-btn.loading { opacity:.7; pointer-events:none; }
+
+    /* ─── RESULTS ─── */
+    .results-col { display:flex; flex-direction:column; gap:20px; }
+
+    /* placeholder */
+    .placeholder {
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:80px 40px; text-align:center;
+      background:rgba(22,22,42,.3);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px; animation: fadeUp .6s .4s ease both;
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+    .ph-rings {
+      position:relative; width:100px;height:100px; margin-bottom:28px;
+    }
+    .ph-ring {
+      position:absolute; border-radius:50%; border:2px solid;
+      animation: ringPulse 3s ease-in-out infinite;
+    }
+    .ph-ring:nth-child(1) { inset:0; border-color:rgba(124,106,247,.3); animation-delay:0s; }
+    .ph-ring:nth-child(2) { inset:12px; border-color:rgba(34,211,238,.25); animation-delay:.5s; }
+    .ph-ring:nth-child(3) { inset:24px; border-color:rgba(124,106,247,.2); animation-delay:1s; }
+    .ph-icon { position:absolute;inset:0;display:grid;place-items:center;font-size:32px; }
+    @keyframes ringPulse {
+      0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.08);opacity:1}
+    }
+    .placeholder h3 {
+      font-family:var(--fhead); font-size:20px; font-weight:700; margin-bottom:8px;
+    }
+    .placeholder p { color:var(--muted); font-size:14px; max-width:300px; line-height:1.6; }
+
+    /* result cards */
+    .rcard {
+      background:rgba(15,15,26,.45);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px; padding:28px;
+      opacity:0; transform:translateY(24px);
+      transition:all .5s cubic-bezier(.34,1.2,.64,1);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.03), 0 8px 32px rgba(0,0,0,.1);
+    }
+    .rcard.show { opacity:1; transform:translateY(0); }
+
+    .rcard-title {
+      font-family:var(--fhead); font-size:15px; font-weight:700; margin-bottom:4px;
+    }
+    .rcard-sub { font-size:12px; color:var(--muted); margin-bottom:22px; }
+
+    /* ── Score Card ── */
+    .score-layout { display:grid; grid-template-columns:200px 1fr; gap:28px; align-items:center; }
+
+    .score-ring-wrap { position:relative; width:200px;height:200px; }
+    .score-ring-wrap svg { transform:rotate(-90deg); }
+    .score-center {
+      position:absolute;inset:0;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+    }
+    .score-num {
+      font-family:var(--fhead); font-size:46px; font-weight:800;
+      letter-spacing:-2px; line-height:1;
+      transition:color .5s;
+    }
+    .score-max { font-size:14px; color:var(--muted); margin-top:2px; }
+
+    .risk-pill {
+      display:inline-flex;align-items:center;gap:7px;
+      padding:6px 16px; border-radius:100px;
+      font-size:13px; font-weight:600; margin-bottom:18px;
+      transition:all .4s;
+    }
+    .risk-dot { width:8px;height:8px;border-radius:50%; animation:pulse 2s infinite; }
+
+    .score-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .sstat {
+      padding:14px; background:rgba(22,22,42,.4); border-radius:12px;
+      border:1px solid rgba(255,255,255,.06);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+    .sstat-val {
+      font-family:var(--fhead); font-size:22px; font-weight:800;
+      letter-spacing:-.5px;
+    }
+    .sstat-val.up   { color:var(--danger); }
+    .sstat-val.down { color:var(--success); }
+    .sstat-label { font-size:11px; color:var(--muted); margin-top:3px; }
+
+    /* ── Intermediate Predictions Card ── */
+    .intermed-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+
+    .icard {
+      padding:18px; background:rgba(22,22,42,.4); border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      position:relative; overflow:hidden;
+      transition: border-color .4s, background .4s;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    .icard::before {
+      content:''; position:absolute;
+      top:0;left:0;right:0;height:3px;
+      border-radius:16px 16px 0 0;
+      transition:background .4s;
+    }
+    .icard-icon { font-size:28px; margin-bottom:10px; }
+    .icard-label { font-size:11px; color:var(--muted); letter-spacing:.8px; text-transform:uppercase; margin-bottom:6px; }
+    .icard-value {
+      font-family:var(--fhead); font-size:26px; font-weight:800;
+      letter-spacing:-1px; line-height:1; margin-bottom:4px;
+      transition:color .4s;
+    }
+    .icard-status { font-size:12px; font-weight:600; transition:color .4s; }
+
+    /* radial fill bar */
+    .icard-bar { margin-top:10px; height:4px; background:rgba(22,22,42,.5); border-radius:4px; overflow:hidden; }
+    .icard-fill { height:100%; border-radius:4px; width:0; transition:width 1s ease; }
+
+    /* ── Productivity Card ── */
+    .prod-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; }
+    .prod-label-center { text-align:center; }
+    .prod-big {
+      font-family:var(--fhead); font-size:38px; font-weight:800;
+      padding:12px 28px; border-radius:100px; display:inline-block;
+      margin-bottom:8px; letter-spacing:-.5px;
+      transition:all .5s;
+    }
+    .prod-big.High   { background:rgba(34,197,94,.12);  color:#22c55e; }
+    .prod-big.Medium { background:rgba(249,115,22,.12); color:#f97316; }
+    .prod-big.Low    { background:rgba(239,68,68,.12);  color:#ef4444; }
+
+    .prob-list { display:flex; flex-direction:column; gap:12px; }
+    .prob-row  { display:flex; align-items:center; gap:10px; }
+    .prob-name { font-size:12px; width:54px; color:var(--muted); text-align:right; }
+    .prob-track { flex:1; height:8px; background:rgba(22,22,42,.4); border-radius:4px; overflow:hidden; }
+    .prob-fill { height:100%; border-radius:4px; width:0; transition:width 1.1s cubic-bezier(.34,1,.64,1); }
+    .prob-fill.High   { background:var(--success); }
+    .prob-fill.Medium { background:var(--warning); }
+    .prob-fill.Low    { background:var(--danger); }
+    .prob-pct { font-size:12px; font-weight:600; width:38px; text-align:right; }
+
+    /* ── Sleep Quality Card ── */
+    .sleep-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; }
+    .sleep-arc-wrap { position:relative; width:160px;height:80px; margin:0 auto; overflow:hidden; }
+    .sleep-arc-wrap svg { position:absolute; bottom:0; left:0; }
+    .sleep-arc-label {
+      position:absolute; bottom:0; left:0; right:0;
+      text-align:center; font-family:var(--fhead);
+      font-size:13px; font-weight:700;
+    }
+    .sleep-info { }
+    .sleep-hrs {
+      font-family:var(--fhead); font-size:42px; font-weight:800;
+      letter-spacing:-2px; line-height:1; margin-bottom:4px;
+    }
+    .sleep-quality-badge {
+      display:inline-block; padding:4px 14px; border-radius:100px;
+      font-size:13px; font-weight:600; margin-bottom:12px;
+    }
+    .sleep-facts { font-size:13px; color:var(--muted); line-height:1.7; }
+
+    /* ── Recommendations Card ── */
+    .rec-grid { display:grid; grid-template-columns:1fr; gap:14px; }
+    .rec {
+      padding:18px 20px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      display:flex; gap:16px; align-items:flex-start;
+      opacity:0; transform:translateY(10px);
+      transition:all .4s cubic-bezier(.34,1,.64,1);
+      background:rgba(15,15,26,.35);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    .rec.show-rec { opacity:1; transform:translateY(0); }
+    .rec.success { border-color:rgba(34,197,94,.25); background:rgba(34,197,94,.08); }
+    .rec.warning { border-color:rgba(249,115,22,.25); background:rgba(249,115,22,.08); }
+    .rec.critical{ border-color:rgba(239,68,68,.25); background:rgba(239,68,68,.08); }
+    .rec-icon {
+      font-size:24px; flex-shrink:0; margin-top:1px; width:28px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .rec.success .rec-icon { color:var(--success); }
+    .rec.warning .rec-icon { color:var(--warning); }
+    .rec.critical .rec-icon { color:var(--danger); }
+    .rec-body { flex:1; }
+    .rec-body h4 {
+      font-family:var(--fhead); font-size:14px; font-weight:700;
+      margin-bottom:6px; letter-spacing:-.3px;
+    }
+    .rec-body p  {
+      font-size:13px; color:var(--muted); line-height:1.6;
+    }
+
+    /* ─── POWER BI MODAL ─── */
+    .modal-backdrop {
+      position:fixed;inset:0;z-index:100;
+      background:rgba(7,7,13,.85); backdrop-filter:blur(12px);
+      display:none; align-items:center; justify-content:center;
+      padding:24px;
+    }
+    .modal-backdrop.open { display:flex; animation:fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .modal {
+      background:rgba(15,15,26,.50);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px; padding:32px; width:100%; max-width:780px;
+      animation:slideUp .35s cubic-bezier(.34,1.2,.64,1);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.03), 0 25px 50px rgba(0,0,0,.3);
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+
+    .modal-header {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;
+    }
+    .modal-title { font-family:var(--fhead); font-size:20px; font-weight:800; }
+    .modal-close {
+      width:36px;height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.15);
+      background:rgba(22,22,42,.5); color:var(--text);
+      display:grid;place-items:center; cursor:pointer;
+      font-size:18px; transition:all .2s;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+    .modal-close:hover {
+      background:rgba(239,68,68,.4);
+      border-color:var(--danger);
+      color:var(--danger);
+    }
+    .modal-sub { font-size:13px; color:var(--muted); margin-bottom:24px; }
+
+    .pbi-badge {
+      display:inline-block; padding:3px 12px; border-radius:6px;
+      background:linear-gradient(135deg,#e9b700,#f97316);
+      color:#000; font-weight:700; font-size:11px;
+      letter-spacing:.5px; margin-right:8px;
+    }
+
+    .pbi-url-row {
+      display:flex; gap:10px; margin-bottom:16px;
+    }
+    .pbi-url-input {
+      flex:1; padding:12px 16px;
+      background:rgba(22,22,42,.4);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:10px; color:var(--text); font-family:var(--fbody);
+      font-size:14px; outline:none; transition:border-color .2s, background .2s;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    .pbi-url-input:focus {
+      border-color:var(--accent);
+      background:rgba(124,106,247,.08);
+    }
+    .pbi-url-input::placeholder { color:var(--muted); }
+    .pbi-load-btn {
+      padding:12px 24px; background:var(--accent); border:none;
+      border-radius:10px; color:#fff; font-family:var(--fhead);
+      font-weight:700; font-size:14px; cursor:pointer; transition:all .2s;
+      white-space:nowrap;
+    }
+    .pbi-load-btn:hover { opacity:.85; transform:translateY(-1px); }
+
+    .pbi-embed-box {
+      background:rgba(22,22,42,.4);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px; overflow:hidden;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    .pbi-placeholder {
+      padding:48px 32px; text-align:center;
+    }
+    .pbi-placeholder-icon { font-size:52px; margin-bottom:16px; }
+    .pbi-placeholder h3 {
+      font-family:var(--fhead); font-size:18px; margin-bottom:8px;
+    }
+    .pbi-placeholder p { font-size:13px; color:var(--muted); line-height:1.6; }
+
+    .pbi-open-btn {
+      display:inline-flex; align-items:center; gap:8px;
+      margin-top:20px; padding:12px 28px;
+      background:linear-gradient(135deg,#e9b700,#f97316);
+      color:#000; border:none; border-radius:10px;
+      font-family:var(--fhead); font-weight:700; font-size:14px;
+      cursor:pointer; transition:all .2s; text-decoration:none;
+    }
+    .pbi-open-btn:hover { opacity:.9; transform:translateY(-1px); }
+
+    iframe.pbi-iframe {
+      width:100%; height:540px; border:none; display:none;
+    }
+
+    .pbi-connection-info {
+      margin-top:20px; padding:16px;
+      background:rgba(124,106,247,.09);
+      border:1px solid rgba(124,106,247,.2);
+      border-radius:12px;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+    .pbi-connection-info h4 {
+      font-family:var(--fhead); font-size:13px; font-weight:700; margin-bottom:10px;
+    }
+    .pbi-points {
+      display:grid; grid-template-columns:1fr 1fr; gap:8px;
+      font-size:12px; color:var(--muted); line-height:1.5;
+    }
+    .pbi-points span strong { color:var(--text); }
+
+    /* spinner */
+    .spin {
+      display:inline-block; width:15px;height:15px;
+      border:2px solid rgba(255,255,255,.3);
+      border-top-color:#fff; border-radius:50%;
+      animation:spin .6s linear infinite;
+      vertical-align:middle; margin-right:7px;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    @media(max-width:1100px) {
+      .wrap { grid-template-columns:1fr; }
+      .form-panel { position:static; }
+      .score-layout,.prod-layout,.sleep-layout { grid-template-columns:1fr; }
+      .intermed-grid { grid-template-columns:1fr 1fr; }
+    }
+    /* ─── PLATFORM CHECKBOXES ─── */
+    .platform-checkboxes {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    .platform-checkbox {
+      display:flex; align-items:center;
+      padding:10px 12px; background:var(--surface2);
+      border:1px solid var(--border); border-radius:8px;
+      cursor:pointer; transition:all .2s;
+    }
+    .platform-checkbox input {
+      width:16px;height:16px; cursor:pointer; margin-right:8px;
+      accent-color:var(--accent);
+    }
+    .platform-checkbox:hover {
+      border-color:var(--accent); background:rgba(124,106,247,.05);
+    }
+    .platform-checkbox label {
+      margin:0; cursor:pointer; font-size:12px;
+    }
+    @media(max-width:680px) {
+      header { padding:16px 20px; }
+      .wrap  { padding:0 20px 40px; }
+      .hero  { padding:48px 20px 28px; }
+      .rec-grid,.intermed-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark"><i class="fas fa-chart-bar"></i></div>
+    <div class="logo-text">
+      <h1>Social Media Addiction Analyzer</h1>
+    </div>
+  </div>
+  <button class="powerbi-nav" onclick="window.open('../IDA_PROJECT_DASHBOARD.pdf')">
+    Dashboard
+  </button>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h2>Predict & Analyze Your<br><span>Digital Addiction Score</span></h2>
+</div>
+
+<!-- MAIN -->
+<div class="wrap">
+
+  <!-- FORM -->
+  <div class="form-panel">
+    <div class="panel-head">Your Profile</div>
+
+    <div class="form-section-label">Personal Info</div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Age</label>
+        <select id="age">
+          <option>18</option><option>19</option><option selected>20</option>
+          <option>21</option><option>22</option><option>23</option><option>24</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Gender</label>
+        <select id="gender"><option>Male</option><option>Female</option></select>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Academic Level</label>
+      <select id="academic">
+        <option>High School</option><option selected>Undergraduate</option><option>Graduate</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Relationship Status</label>
+      <select id="relationship">
+        <option selected>Single</option><option>In Relationship</option><option>Complicated</option>
+      </select>
+    </div>
+
+    <div class="form-section-label">Digital Habits</div>
+    <div class="fg">
+      <label>Platforms Used</label>
+      <div class="platform-checkboxes" id="platform-checkboxes">
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="Instagram"> Instagram
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="TikTok"> TikTok
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="YouTube"> YouTube
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="Facebook"> Facebook
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="Twitter"> Twitter
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="Snapchat"> Snapchat
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="WhatsApp"> WhatsApp
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="LinkedIn"> LinkedIn
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="LINE"> LINE
+        </label>
+        <label class="platform-checkbox">
+          <input type="checkbox" name="platform" value="WeChat"> WeChat
+        </label>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Daily Social Media Usage</label>
+      <div class="range-wrap">
+        <input type="range" id="usage" min="0.5" max="12" step="0.5" value="3"
+          oninput="document.getElementById('usage-val').textContent=this.value+'h'">
+        <div class="range-meta">
+          <span class="range-ends">0.5h</span>
+          <span class="range-val" id="usage-val">3h</span>
+          <span class="range-ends">12h</span>
+        </div>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Sleep Hours Per Night</label>
+      <div class="range-wrap">
+        <input type="range" id="sleep" min="3" max="10" step="0.5" value="7"
+          oninput="document.getElementById('sleep-val').textContent=this.value+'h'">
+        <div class="range-meta">
+          <span class="range-ends">3h</span>
+          <span class="range-val" id="sleep-val">7h</span>
+          <span class="range-ends">10h</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="analyze-btn" id="analyze-btn" onclick="runAnalysis()">
+      Analyze Addiction Profile
+    </button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-col" id="results-col">
+
+    <!-- Placeholder -->
+    <div class="placeholder" id="placeholder">
+      <div class="ph-rings">
+        <div class="ph-ring"></div>
+        <div class="ph-ring"></div>
+        <div class="ph-ring"></div>
+        <div class="ph-icon"><i class="fas fa-magnifying-glass"></i></div>
+      </div>
+      <h3>Ready to Analyze</h3>
+      <p>Fill in your profile and click <strong>Analyze</strong>. The ML model handles the rest.</p>
+    </div>
+
+    <!-- Card 1: Addiction Score -->
+    <div class="rcard" id="card-score">
+      <div class="rcard-title">Addiction Score Prediction</div>
+      <div class="score-layout">
+        <div class="score-ring-wrap">
+          <svg width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="82" fill="none" stroke="#16162a" stroke-width="16"/>
+            <circle id="score-arc" cx="100" cy="100" r="82" fill="none"
+              stroke="#7c6af7" stroke-width="16" stroke-linecap="round"
+              stroke-dasharray="515.2" stroke-dashoffset="515.2"
+              style="transition:stroke-dashoffset 1.4s cubic-bezier(.34,1,.64,1),stroke .5s"/>
+          </svg>
+          <div class="score-center">
+            <div class="score-num" id="score-num">—</div>
+            <div class="score-max">/10</div>
+          </div>
+        </div>
+        <div>
+          <div class="risk-pill" id="risk-pill">
+            <span class="risk-dot" id="risk-dot"></span>
+            <span id="risk-text">—</span>
+          </div>
+          <div class="score-stats">
+            <div class="sstat">
+              <div class="sstat-val" id="vs-avg-val">—</div>
+              <div class="sstat-label">vs Dataset Avg (6.4)</div>
+            </div>
+            <div class="sstat">
+              <div class="sstat-val" id="pct-val">—</div>
+              <div class="sstat-label">Addiction Index %</div>
+            </div>
+            <div class="sstat">
+              <div class="sstat-val" id="usage-vs-val">—</div>
+              <div class="sstat-label">Usage vs Avg (4.2h)</div>
+            </div>
+            <div class="sstat">
+              <div class="sstat-val" id="sleep-rating">—</div>
+              <div class="sstat-label">Sleep Quality</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: ML-Predicted Intermediates -->
+    <div class="rcard" id="card-intermed">
+      <div class="rcard-title">ML-Predicted Behavioral Indicators</div>
+      <div class="intermed-grid">
+
+        <div class="icard" id="ic-mental">
+          <div class="icard::before"></div>
+          <div class="icard-icon"><i class="fas fa-brain"></i></div>
+          <div class="icard-label">Mental Health Score</div>
+          <div class="icard-value" id="ic-mental-val">—</div>
+          <div class="icard-status" id="ic-mental-status">—</div>
+          <div class="icard-bar"><div class="icard-fill" id="ic-mental-fill"></div></div>
+        </div>
+
+        <div class="icard" id="ic-conflict">
+          <div class="icard-icon"><i class="fas fa-comments"></i></div>
+          <div class="icard-label">Social Conflicts</div>
+          <div class="icard-value" id="ic-conflict-val">—</div>
+          <div class="icard-status" id="ic-conflict-status">—</div>
+          <div class="icard-bar"><div class="icard-fill" id="ic-conflict-fill"></div></div>
+        </div>
+
+        <div class="icard" id="ic-affects">
+          <div class="icard-icon"><i class="fas fa-book"></i></div>
+          <div class="icard-label">Academic Impact</div>
+          <div class="icard-value" id="ic-affects-val">—</div>
+          <div class="icard-status" id="ic-affects-status">—</div>
+          <div class="icard-bar"><div class="icard-fill" id="ic-affects-fill"></div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Card 3: Productivity -->
+    <div class="rcard" id="card-prod">
+      <div class="rcard-title">Productivity Prediction</div>
+      <div class="prod-layout">
+        <div class="prod-label-center">
+          <div class="prod-big" id="prod-big">—</div>
+          <div style="font-size:13px;color:var(--muted)">Predicted Productivity</div>
+        </div>
+        <div class="prob-list">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Class Probabilities</div>
+          <div class="prob-row">
+            <div class="prob-name">High</div>
+            <div class="prob-track"><div class="prob-fill High" id="pb-high"></div></div>
+            <div class="prob-pct" id="pp-high">—</div>
+          </div>
+          <div class="prob-row">
+            <div class="prob-name">Medium</div>
+            <div class="prob-track"><div class="prob-fill Medium" id="pb-med"></div></div>
+            <div class="prob-pct" id="pp-med">—</div>
+          </div>
+          <div class="prob-row">
+            <div class="prob-name">Low</div>
+            <div class="prob-track"><div class="prob-fill Low" id="pb-low"></div></div>
+            <div class="prob-pct" id="pp-low">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Sleep Quality -->
+    <div class="rcard" id="card-sleep">
+      <div class="rcard-title">Sleep Quality Analysis</div>
+      <div class="sleep-layout">
+        <div>
+          <div class="sleep-hrs" id="sleep-hrs-disp">—</div>
+          <div class="sleep-quality-badge" id="sleep-badge">—</div>
+          <div class="sleep-facts" id="sleep-facts">—</div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Sleep Score</div>
+          <div style="position:relative;height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;margin-bottom:8px">
+            <div id="sleep-bar" style="position:absolute;left:0;top:0;height:100%;border-radius:6px;width:0;transition:width 1.2s ease"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">
+            <span>Poor</span><span>Fair</span><span>Good</span><span>Excellent</span>
+          </div>
+          <div style="margin-top:16px;font-size:13px;color:var(--muted);line-height:1.7" id="sleep-tip">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5: Recommendations -->
+    <div class="rcard" id="card-recs">
+      <div class="rcard-title">Personalized Recommendations</div>
+      <div class="rec-grid" id="rec-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+// ── Power BI Modal ──
+function openPBI()  { document.getElementById('pbi-modal').classList.add('open'); }
+function closePBI() { document.getElementById('pbi-modal').classList.remove('open'); }
+function closePBIOutside(e) { if(e.target === e.currentTarget) closePBI(); }
+function loadPBI() {
+  const url = document.getElementById('pbi-url').value.trim();
+  if(!url){ alert('Please paste a Power BI embed URL.'); return; }
+  const ph = document.getElementById('pbi-placeholder');
+  const fr = document.getElementById('pbi-iframe');
+  ph.style.display = 'none';
+  fr.src = url;
+  fr.style.display = 'block';
+}
+
+// ── Analysis ──
+async function runAnalysis() {
+  const btn = document.getElementById('analyze-btn');
+  btn.innerHTML = '<span class="spin"></span>Analyzing...';
+  btn.classList.add('loading');
+
+  // Get selected platforms
+  const platformCheckboxes = document.querySelectorAll('input[name="platform"]:checked');
+  const selectedPlatforms = Array.from(platformCheckboxes).map(cb => cb.value);
+  const mostUsedPlatform = selectedPlatforms.length > 0 ? selectedPlatforms[0] : 'Instagram';
+
+  const payload = {
+    age:                    document.getElementById('age').value,
+    gender:                 document.getElementById('gender').value,
+    academic_level:         document.getElementById('academic').value,
+    avg_daily_usage_hours:  parseFloat(document.getElementById('usage').value),
+    most_used_platform:     mostUsedPlatform,
+    sleep_hours_per_night:  parseFloat(document.getElementById('sleep').value),
+    relationship_status:    document.getElementById('relationship').value,
+    platforms_used:         selectedPlatforms
+  };
+
+  let data;
+  try {
+    const res = await fetch(`${API}/analyze`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    data = await res.json();
+    if(!data.success) throw new Error(data.error);
+  } catch(e) {
+    data = fallback(payload);
+  }
+
+  btn.innerHTML = 'Analyze My Addiction Profile';
+  btn.classList.remove('loading');
+
+  showResults(data);
+}
+
+function showResults(d) {
+  document.getElementById('placeholder').style.display = 'none';
+
+  const cards = ['card-score','card-intermed','card-sleep','card-prod','card-recs'];
+  cards.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.style.display = 'block';
+    setTimeout(() => el.classList.add('show'), i * 130);
+  });
+
+  // ── Card 1: Score ──
+  const arc = document.getElementById('score-arc');
+  const circ = 515.2;
+  arc.style.strokeDashoffset = circ - (d.addiction_score / 9) * circ;
+  arc.style.stroke = d.risk_color;
+
+  document.getElementById('score-num').textContent = d.addiction_score.toFixed(1);
+  document.getElementById('score-num').style.color  = d.risk_color;
+
+  const pill = document.getElementById('risk-pill');
+  pill.style.background = d.risk_color + '22';
+  pill.style.color = d.risk_color;
+  document.getElementById('risk-dot').style.background = d.risk_color;
+  document.getElementById('risk-text').textContent = d.risk_level + ' Risk';
+
+  const vsA = d.score_vs_avg;
+  const vsEl = document.getElementById('vs-avg-val');
+  vsEl.textContent = (vsA > 0 ? '+' : '') + vsA;
+  vsEl.className = 'sstat-val ' + (vsA > 0 ? 'up' : 'down');
+  document.getElementById('pct-val').textContent = d.addiction_score_pct + '%';
+
+  const usV = d.usage_vs_avg;
+  const usEl = document.getElementById('usage-vs-val');
+  usEl.textContent = (usV > 0 ? '+' : '') + usV + 'h';
+  usEl.className = 'sstat-val ' + (usV > 0 ? 'up' : 'down');
+
+  document.getElementById('sleep-rating').textContent = d.sleep_quality;
+  document.getElementById('sleep-rating').style.color = d.sleep_color;
+
+  // ── Card 2: Intermediates ──
+  setTimeout(() => {
+    // Mental health
+    setICard('ic-mental', d.predicted_mental_health + '/10',
+      d.mental_health_label, d.mental_health_color,
+      (d.predicted_mental_health / 10) * 100);
+
+    // Conflicts
+    setICard('ic-conflict', d.predicted_conflicts.toFixed(1) + '/5',
+      d.conflict_label, d.conflict_color,
+      (d.predicted_conflicts / 5) * 100);
+
+    // Affects academic
+    const affColor = d.predicted_affects_academic === 'Yes' ? '#ef4444' : '#22c55e';
+    const affPct   = d.predicted_affects_academic === 'Yes' ? 80 : 20;
+    setICard('ic-affects', d.predicted_affects_academic,
+      d.predicted_affects_academic === 'Yes' ? 'Performance affected' : 'Not significantly affected',
+      affColor, affPct);
+  }, 200);
+
+  // ── Card 3: Sleep ──
+  setTimeout(() => {
+    document.getElementById('sleep-hrs-disp').textContent = parseFloat(document.getElementById('sleep').value) + 'h';
+    document.getElementById('sleep-hrs-disp').style.color = d.sleep_color;
+
+    const badge = document.getElementById('sleep-badge');
+    badge.textContent = d.sleep_quality;
+    badge.style.background = d.sleep_color + '22';
+    badge.style.color = d.sleep_color;
+
+    const bar = document.getElementById('sleep-bar');
+    bar.style.background = d.sleep_color;
+    bar.style.width = d.sleep_pct + '%';
+
+    const facts = {
+      'Excellent': 'Excellent sleep is your strongest defence against addiction escalation. Keep protecting this habit.',
+      'Good':      'Good sleep supports mental resilience. Even small improvements can meaningfully reduce addiction risk.',
+      'Fair':      'Fair sleep is reducing your resistance to addictive patterns. Aim for an extra 30–60 minutes each night.',
+      'Poor':      'Poor sleep is significantly amplifying your addiction risk. A phone-free bedtime routine is critical.'
+    };
+    document.getElementById('sleep-tip').textContent = facts[d.sleep_quality] || '';
+  }, 300);
+
+  // ── Card 4: Productivity ──
+  setTimeout(() => {
+    const pb = document.getElementById('prod-big');
+    pb.textContent = d.productivity_level;
+    pb.className = 'prod-big ' + d.productivity_level;
+
+    const pr = d.productivity_probabilities;
+    animateBar('pb-high', 'pp-high', pr['High'] || 0);
+    animateBar('pb-med',  'pp-med',  pr['Medium'] || 0);
+    animateBar('pb-low',  'pp-low',  pr['Low'] || 0);
+  }, 350);
+
+  // ── Card 5: Recommendations ──
+  setTimeout(() => {
+    const grid = document.getElementById('rec-grid');
+    const iconMap = {
+      'warning': 'fa-triangle-exclamation',
+      'critical': 'fa-circle-exclamation',
+      'success': 'fa-circle-check'
+    };
+    grid.innerHTML = d.recommendations.map(r => {
+      const iconClass = iconMap[r.type] || 'fa-info-circle';
+      return `<div class="rec ${r.type}">
+        <div class="rec-icon"><i class="fas ${iconClass}"></i></div>
+        <div class="rec-body"><h4>${r.title}</h4><p>${r.text}</p></div>
+      </div>`;
+    }).join('');
+    document.querySelectorAll('.rec').forEach((el, i) => {
+      setTimeout(() => el.classList.add('show-rec'), i * 80);
+    });
+  }, 500);
+}
+
+function setICard(id, value, status, color, pct) {
+  const card = document.getElementById(id);
+  card.style.borderColor = color + '40';
+  // top bar via pseudoelement workaround (use style on child)
+  const valEl    = document.getElementById(id + '-val');
+  const statEl   = document.getElementById(id + '-status');
+  const fillEl   = document.getElementById(id + '-fill');
+  valEl.textContent  = value;
+  valEl.style.color  = color;
+  statEl.textContent = status;
+  statEl.style.color = color;
+  fillEl.style.background = color;
+  setTimeout(() => { fillEl.style.width = Math.min(100, pct) + '%'; }, 100);
+}
+
+function animateBar(fillId, pctId, pct) {
+  document.getElementById(fillId).style.width = pct + '%';
+  document.getElementById(pctId).textContent  = pct + '%';
+}
+
+// ── Fallback (offline) ──
+function fallback(p) {
+  const usage = parseFloat(p.avg_daily_usage_hours);
+  const sleep = parseFloat(p.sleep_hours_per_night);
+  const mental = Math.max(1, Math.min(10, 10 - usage * 0.7 + (sleep - 6) * 0.5));
+  const conflicts = Math.max(0, Math.min(5, usage * 0.4 - sleep * 0.1));
+  const affects = usage > 4 || sleep < 6 ? 'Yes' : 'No';
+  const score = Math.max(1, Math.min(9,
+    mental * -0.8 + usage * 0.5 + conflicts * 0.4 +
+    (sleep < 6 ? 1.5 : 0) + (affects === 'Yes' ? 0.8 : 0) + 5
+  ));
+  const risk = score >= 7 ? 'High' : score >= 5 ? 'Moderate' : 'Low';
+  const rc   = risk === 'High' ? '#ef4444' : risk === 'Moderate' ? '#f97316' : '#22c55e';
+  const prod = sleep >= 8 && usage < 3 ? 'High' : usage > 6 || sleep < 6 ? 'Low' : 'Medium';
+  const sq   = sleep >= 8 ? 'Excellent' : sleep >= 7 ? 'Good' : sleep >= 6 ? 'Fair' : 'Poor';
+  const sc   = sleep >= 8 ? '#22c55e' : sleep >= 7 ? '#86efac' : sleep >= 6 ? '#f97316' : '#ef4444';
+  const sp   = sleep >= 8 ? 95 : sleep >= 7 ? 78 : sleep >= 6 ? 52 : 28;
+  const mhL  = mental >= 8 ? ['Thriving','#22c55e'] : mental >= 6 ? ['Stable','#86efac'] : mental >= 4 ? ['Struggling','#f97316'] : ['At Risk','#ef4444'];
+  const cfL  = conflicts <= 1 ? ['Minimal','#22c55e'] : conflicts <= 2 ? ['Low','#86efac'] : conflicts <= 3 ? ['Moderate','#f97316'] : ['High','#ef4444'];
+  return {
+    success:true,
+    addiction_score: Math.round(score*10)/10,
+    addiction_score_pct: Math.round((score/9)*100),
+    risk_level:risk, risk_color:rc,
+    productivity_level:prod,
+    productivity_probabilities:{
+      High: prod==='High'?72: prod==='Medium'?20:8,
+      Medium: prod==='Medium'?65:20,
+      Low: prod==='Low'?70: prod==='Medium'?15:8
+    },
+    score_vs_avg: Math.round((score-6.44)*100)/100,
+    usage_vs_avg: Math.round((usage-4.19)*100)/100,
+    predicted_mental_health: Math.round(mental*10)/10,
+    mental_health_label: mhL[0], mental_health_color: mhL[1],
+    predicted_conflicts: Math.round(conflicts*10)/10,
+    conflict_label: cfL[0], conflict_color: cfL[1],
+    predicted_affects_academic: affects,
+    sleep_quality:sq, sleep_color:sc, sleep_pct:sp,
+    recommendations: buildRecs(score, usage, sleep, mental, conflicts, affects, prod)
+  };
+}
+
+function buildRecs(addiction, usage, sleep, mental, conflicts, affects, productivity) {
+  const r = [];
+  if(addiction>=7) r.push({type:'critical',icon:'fa-circle-exclamation',title:'High Addiction Risk',text:`Your score of ${addiction.toFixed(1)}/9 is in the danger zone. A structured digital detox plan is strongly recommended.`});
+  else if(addiction>=5) r.push({type:'warning',icon:'fa-triangle-exclamation',title:'Moderate Addiction',text:`Your score of ${addiction.toFixed(1)}/9 indicates growing dependency. Setting daily screen-time limits can significantly help.`});
+  else r.push({type:'success',icon:'fa-circle-check',title:'Healthy Digital Balance',text:`Your score of ${addiction.toFixed(1)}/9 reflects a healthy relationship with social media. Keep it up.`});
+  if(usage>6) r.push({type:'critical',icon:'fa-circle-exclamation',title:'Excessive Screen Time',text:`${usage}h/day is far above healthy levels. Use app timers and schedule tech-free hours.`});
+  else if(usage>4) r.push({type:'warning',icon:'fa-triangle-exclamation',title:'Above-Average Usage',text:`${usage}h/day is above the safe threshold. Try the 20-20-20 rule and reduce evening screen time.`});
+  else r.push({type:'success',icon:'fa-circle-check',title:'Controlled Usage',text:`${usage}h/day is within a manageable range. Continue being mindful of screen habits.`});
+  if(sleep<6) r.push({type:'critical',icon:'fa-circle-exclamation',title:'Severe Sleep Deficit',text:`Only ${sleep}h of sleep is seriously harmful. A phone-free bedtime routine is critical.`});
+  else if(sleep<7) r.push({type:'warning',icon:'fa-triangle-exclamation',title:'Insufficient Sleep',text:`${sleep}h is below the recommended 7–9h. Avoid screens at least 1 hour before bed.`});
+  else r.push({type:'success',icon:'fa-circle-check',title:'Healthy Sleep Pattern',text:`${sleep}h of sleep is great. Good sleep is the strongest buffer against addiction.`});
+  if(mental<4) r.push({type:'critical',icon:'fa-circle-exclamation',title:'Mental Health Alert',text:`Predicted mental health score of ${mental.toFixed(1)}/10 is low. Consider speaking with a counselor.`});
+  else if(mental<6) r.push({type:'warning',icon:'fa-triangle-exclamation',title:'Mental Health Check-In',text:`A score of ${mental.toFixed(1)}/10 has room to improve. Mindfulness and offline social time can help.`});
+  else r.push({type:'success',icon:'fa-circle-check',title:'Positive Mental Wellbeing',text:`Predicted mental health of ${mental.toFixed(1)}/10 is healthy. Keep your habits balanced to maintain it.`});
+  if(affects==='Yes') r.push({type:'warning',icon:'fa-triangle-exclamation',title:'Academic Impact Detected',text:'Your usage pattern is likely affecting academic performance. Try app blockers during study sessions.'});
+  if(productivity==='Low') r.push({type:'critical',icon:'fa-circle-exclamation',title:'Low Productivity Forecast',text:'The Pomodoro technique and scheduled social media time can create immediate improvement.'});
+  else if(productivity==='Medium') r.push({type:'warning',icon:'fa-triangle-exclamation',title:'Moderate Productivity',text:'Small reductions in usage and better sleep could push you into the High productivity tier.'});
+  else r.push({type:'success',icon:'fa-circle-check',title:'High Productivity',text:'Your balanced habits support high academic productivity. Maintain this consistency.'});
+  return r;
+}
+</script>
+</body>
+</html>
